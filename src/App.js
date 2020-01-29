@@ -1,26 +1,62 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react'
+import QuestionList from './components/quiz/QuestionList'
+import Scorebox from './components/quiz/Scorebox'
+import Results from './components/quiz/Results'
+import './App.css'
+import { createQuizData as quizData } from './api/opentdb'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      questions: [],
+      score: 0,
+      current: 0,
+      loading: undefined
+    }
+  }
+
+  setCurrent(current) {
+    this.setState({ current })
+  }
+
+  setScore(score) {
+    this.setState({ score })
+  }
+
+  async componentDidMount() {
+    try {
+      this.setState({ loading: true })
+      this.setState({ questions: await quizData(), loading: false })
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  render() {
+    if (this.state.loading === false) {
+      if (this.state.current >= this.state.questions.length) {
+        var scorebox = ''
+        var results = <Results {...this.state} />
+      } else {
+        scorebox = <Scorebox {...this.state} />
+        results = ''
+      }
+      return (
+        <div>
+          {scorebox}
+          <QuestionList
+            {...this.state}
+            setCurrent={this.setCurrent.bind(this)}
+            setScore={this.setScore.bind(this)}
+          />
+          {results}
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
 }
 
-export default App;
+export default App
